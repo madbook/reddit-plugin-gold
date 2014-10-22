@@ -78,21 +78,17 @@ def spritify(sprite_folder, spritesheet_output_path, tailor_output_path):
         # each directory can contain a tailor.json file to override defaults
         tailor_config_path = os.path.join(sprite_folder, directory, 'tailor.json')
         tailor = None
-        if os.path.isfile(tailor_config_path):
-            with open(tailor_config_path) as config_file:    
+        try:
+            with open(tailor_config_path) as config_file:
                 tailor = json.load(config_file)
+        except IOError:
+            tailor = {}        
         if not tailor:
             tailor = {}
-        if not 'name' in tailor:
-            tailor['name'] = directory
-        if not 'allow_clear' in tailor:
-            tailor['allow_clear'] = True
-        if not 'spritesheet' in tailor:
-            tailor['spritesheet'] = directory
-        # was relying on order in json for rendering order, but can't rely on
-        # that if its generated
-        if not 'z-index' in tailor:
-            tailor['z-index'] = 100
+        tailor.setdefault("name", directory)
+        tailor.setdefault("allow_clear", True)
+        tailor.setdefault("spritesheet", directory)
+        tailor.setdefault("z-index", 100)
         
         spritesheet_name = tailor['spritesheet']
         tailor['dressings'] = []
