@@ -57,8 +57,6 @@ class Sprite():
         self.y = y
 
     def to_dict(self):
-        # is there a better way to do this? I really just need to get a dict of
-        # everything but the `image` property, as that doesn't serialize to json
         return {
             'name': self.name,
             'width': self.width,
