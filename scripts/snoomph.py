@@ -95,7 +95,7 @@ def spritify(sprite_folder, spritesheet_output_path, tailor_output_path):
         spritesheet = SpriteSheet(6400)
         sprite_paths = glob.glob(os.path.join(
             sprite_folder, directory, '*.png'))
-        for sprite_path in image_paths:
+        for sprite_path in sprite_paths:
             image = Image.open(sprite_path)
             name = os.path.splitext(os.path.basename(sprite_path))[0]
             sprite = spritesheet.add_sprite(name, image)
