@@ -88,6 +88,7 @@ def spritify(sprite_folder, spritesheet_output_path, tailor_output_path):
         tailor.setdefault("allow_clear", True)
         tailor.setdefault("name", directory)
         tailor.setdefault("spritesheet", directory)
+        tailor.setdefault("use_dynamic_color", False)
         tailor.setdefault("z-index", 100)
         
         spritesheet_name = tailor['spritesheet']
