@@ -5,10 +5,7 @@ import subprocess
 
 import Image
 
-
-def optimize_png(filename):
-    with open(os.path.devnull, 'w') as devnull:
-        subprocess.check_call(("/usr/bin/optipng", filename), stdout=devnull)
+from r2.lib.nymph import optimize_png
 
 
 class SpriteSheet():
