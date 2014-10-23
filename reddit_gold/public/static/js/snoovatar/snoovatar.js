@@ -84,6 +84,26 @@
   };
 
   /**
+   * returns an image with the given src that _may_ not be loaded yet
+   * @param  {string} src 
+   * @return {Image}     
+   */
+  function loadImage(src) {
+    var img = new Image();
+    img.src = src;
+    return img;
+  }
+
+  /**
+   * returns an array of images that may not be loaded yet
+   * @param  {string[]} srcs
+   * @return {Image[]}
+   */
+  function loadImages(srcs) {
+    return _.map(srcs, loadImage);
+  }
+
+  /**
    * exposes a public function for the mako template to pass in tailor json data
    * data is used to resolve the attached promise
    * @param  {object} data tailors.json data
@@ -130,7 +150,7 @@
           return imagePath + tailor.name + '/' + dressing.name + '.' + filetype;
         }));
       }, []);
-      return $.preloadImageArray(imageSources);
+      return loadImages(imageSources);
     }, function() {
       debugger
     });
@@ -207,7 +227,7 @@
       $view.tailorButtons.append($buttons);
 
       haberdashery.setTailor($activeButton.attr('id'));
-
+      window.h = haberdashery
       $view.tailorButtons.on('click', 'li', function() {
         $activeButton.removeClass('selected');
         $(this).addClass('selected');
@@ -343,6 +363,11 @@
     }
     CanvasArray.call(this, elements, 0);
     this.canvas.width = this.canvas.height = this.spriteSize;
+    // attach to img elements that are still loading so they will trigger a 
+    // redraw
+    this.forceRedraw = _.bind(function() {
+      this.drawCanvas(this.index);
+    }, this);
     this.drawCanvas(this.index);
   }
 
@@ -405,6 +430,9 @@
     }
     else {
       var img = this.imageMap[this.elements[i].name];
+      if (!img.complete < !img.width) {
+        img.onload = this.forceRedraw;
+      }
       this.ctx.drawImage(img,
             0, 0, this.spriteSize, this.spriteSize,
             0, 0, this.canvas.width, this.canvas.height);
