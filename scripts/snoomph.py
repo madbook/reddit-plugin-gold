@@ -1,75 +1,10 @@
 import glob
 import json
 import os
-import subprocess
 
-import Image
-
-from r2.lib.nymph import optimize_png
-
-
-class SpriteSheet():
-    def __init__(self, max_width):
-        self.max_width = max_width
-        self.width = 0
-        self.height = 0
-        self.x_offset = 0
-        self.y_offset = 0
-        self.row_height = 0
-        self.sprites = []
-  
-    def add_sprite(self, name, image):
-        sprite = Sprite(name, image, self.x_offset, self.y_offset)
-
-        if (sprite.x + sprite.width > self.max_width):
-            sprite.x = 0
-            sprite.y = self.y_offset + self.row_height
-            self.row_height = sprite.height
-        else:
-            self.width = max(self.width, sprite.x + sprite.width)
-            self.row_height = max(self.row_height, sprite.height)
-
-        self.height = sprite.y + self.row_height
-        self.x_offset = sprite.x + sprite.width
-        self.y_offset = sprite.y
-        self.sprites.append(sprite)
-
-        return sprite
-
-    def save(self, spritesheet_path):
-        background_color = (255, 69, 0, 0)  # transparent orangered
-        image = Image.new('RGBA', (self.width, self.height), background_color)
-
-        for sprite in self.sprites:
-            image.paste(sprite.image, (sprite.x, sprite.y))
-
-        image.save(spritesheet_path, optimize=True)
-        optimize_png(spritesheet_path)
-
-
-class Sprite():
-    def __init__(self, name, image, x, y):
-        self.name = name
-        self.image = image
-        self.width = image.size[0]
-        self.height = image.size[1]
-        self.x = x
-        self.y = y
-
-    def to_dict(self):
-        return {
-            'name': self.name,
-            'width': self.width,
-            'height': self.height,
-            'x': self.x,
-            'y': self.y,
-        }
-
-
-def spritify(sprite_folder, spritesheet_output_path, tailor_output_path):
+def write_tailor_config(sprite_folder, output_path):
     sprite_folder = os.path.abspath(sprite_folder)
-    spritesheet_output_path = os.path.abspath(spritesheet_output_path)
-    tailor_output_path = os.path.abspath(tailor_output_path)
+    output_path = os.path.abspath(output_path)
     sprite_directories = os.walk(sprite_folder).next()[1]
     tailors = []
     
@@ -91,24 +26,20 @@ def spritify(sprite_folder, spritesheet_output_path, tailor_output_path):
         tailor.setdefault("use_dynamic_color", False)
         tailor.setdefault("z-index", 100)
         
-        spritesheet_name = tailor['spritesheet']
         tailor['dressings'] = []
-        spritesheet = SpriteSheet(6400)
         sprite_paths = glob.glob(os.path.join(
             sprite_folder, directory, '*.png'))
         for sprite_path in sprite_paths:
-            image = Image.open(sprite_path)
             name = os.path.splitext(os.path.basename(sprite_path))[0]
-            sprite = spritesheet.add_sprite(name, image)
-            tailor['dressings'].append(sprite.to_dict())
+            tailor['dressings'].append({
+                "name": name,
+            })
         tailors.append(tailor)
-        spritesheet.save(os.path.join(
-            spritesheet_output_path, spritesheet_name + '.png'))
 
-    with open(tailor_output_path, 'w') as output_file:
+    with open(output_path, 'w') as output_file:
         json.dump(tailors, output_file, indent=4)
 
 
 if __name__ == '__main__':
     import sys
-    print spritify(sys.argv[1], sys.argv[2], sys.argv[3])
+    print write_tailor_config(sys.argv[1], sys.argv[2])
